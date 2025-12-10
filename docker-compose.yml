@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: voucher_db
+      MYSQL_USER: voucher_user
+      MYSQL_PASSWORD: voucher_pass
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+volumes:
+  db_data:
