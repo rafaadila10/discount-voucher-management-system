@@ -1,0 +1,219 @@
+{
+  "info": {
+    "name": "Voucher API - Full CRUD Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"admin\", \"password\": \"admin\"}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/login",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Voucher",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "123456"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"code\": \"DISC10\", \"discount\": 10, \"expiry_date\": \"2025-12-31\"}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/vouchers",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "vouchers"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get All Vouchers",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "123456"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/vouchers",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "vouchers"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Voucher By ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "123456"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/vouchers/1",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "vouchers",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update Voucher",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "123456"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"code\": \"DISC15\", \"discount\": 15, \"expiry_date\": \"2025-10-01\"}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/vouchers/1",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "vouchers",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Voucher",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "123456"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/vouchers/1",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "vouchers",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Upload CSV",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "123456"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "/mnt/data/sample_vouchers.csv"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/vouchers/upload-csv",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "vouchers",
+            "upload-csv"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Export CSV",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "123456"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/vouchers/export",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "vouchers",
+            "export"
+          ]
+        }
+      }
+    }
+  ]
+}
