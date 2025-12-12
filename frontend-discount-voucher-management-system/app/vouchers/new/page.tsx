@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7,16 +7,19 @@ import { useToast } from '../../../components/Toast'
 
 export default function CreateVoucherPage() {
   const router = useRouter();
+  const toast = useToast();
 
   const [voucherCode, setVoucherCode] = useState("");
   const [discount, setDiscount] = useState("");
   const [expiry, setExpiry] = useState("");
   const [loading, setLoading] = useState(false);
-  const toast = useToast()
+
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   const submit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
 
     try {
       await api.post("/vouchers", {
@@ -28,9 +31,15 @@ export default function CreateVoucherPage() {
       toast.show("Voucher created!");
       router.push("/vouchers");
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.show("Failed to create voucher", "error");
+
+      const fieldErrors = err?.response?.data?.errors;
+      if (fieldErrors) {
+        setErrors(fieldErrors);
+      } else {
+        toast.show("Failed to create voucher", "error");
+      }
     }
 
     setLoading(false);
@@ -46,34 +55,47 @@ export default function CreateVoucherPage() {
           <label className="block mb-1 font-medium">Voucher Code</label>
           <input
             type="text"
-            className="border p-2 w-full rounded"
+            className={`border p-2 w-full rounded ${errors.voucher_code ? 'border-red-500' : ''}`}
             value={voucherCode}
             onChange={e => setVoucherCode(e.target.value)}
             required
           />
+          {errors.voucher_code && (
+            <p className="text-red-500 text-sm mt-1">{errors.voucher_code}</p>
+          )}
         </div>
 
         <div>
           <label className="block mb-1 font-medium">Discount (%)</label>
           <input
             type="number"
-            className="border p-2 w-full rounded"
+            className={`border p-2 w-full rounded ${errors.discount_percent ? 'border-red-500' : ''}`}
             value={discount}
             onChange={e => setDiscount(e.target.value)}
             required
           />
+          {errors.discount_percent && (
+            <p className="text-red-500 text-sm mt-1">{errors.discount_percent}</p>
+          )}
         </div>
 
         <div>
           <label className="block mb-1 font-medium">Expiry Date</label>
           <input
             type="date"
-            className="border p-2 w-full rounded"
+            className={`border p-2 w-full rounded ${errors.expiry_date ? 'border-red-500' : ''}`}
             value={expiry}
             onChange={e => setExpiry(e.target.value)}
             required
           />
+          {errors.expiry_date && (
+            <p className="text-red-500 text-sm mt-1">{errors.expiry_date}</p>
+          )}
         </div>
+
+        {errors.general && (
+          <p className="text-red-500 text-sm mt-1">{errors.general}</p>
+        )}
 
         <div className="flex gap-2">
           <button

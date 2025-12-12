@@ -10,6 +10,13 @@ type Form = {
   expiry_date: string
 }
 
+type FieldErrors = {
+  voucher_code?: string
+  discount_percent?: string
+  expiry_date?: string
+  general?: string
+}
+
 export default function VoucherForm({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
   const isNew = id === 'new'
@@ -22,6 +29,7 @@ export default function VoucherForm({ params }: { params: Promise<{ id: string }
     expiry_date: ''
   })
 
+  const [errors, setErrors] = useState<FieldErrors>({})
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(!isNew)
 
@@ -50,24 +58,31 @@ export default function VoucherForm({ params }: { params: Promise<{ id: string }
   const save = async (e: any) => {
     e.preventDefault()
     setLoading(true)
+    setErrors({})
 
     try {
-      if (!form.voucher_code) throw new Error("Voucher code required")
-      if (form.discount_percent < 1 || form.discount_percent > 100)
-        throw new Error("Discount must be 1–100")
-      if (!form.expiry_date) throw new Error("Expiry date required")
+      const payload = {
+        voucher_code: form.voucher_code,
+        discount_percent: form.discount_percent,
+        expiry_date: form.expiry_date
+      }
 
       if (isNew) {
-        await api.post('/vouchers', form)
+        await api.post('/vouchers', payload)
         toast.show("Voucher created successfully!")
       } else {
-        await api.put('/vouchers/' + id, form)
+        await api.put('/vouchers/' + id, payload)
         toast.show("Voucher updated successfully!")
       }
 
       setTimeout(() => router.push('/vouchers'), 800)
     } catch (err: any) {
-      toast.show(err.response?.data?.error || err.message, "error")
+      const respErrors = err.response?.data?.errors
+      if (respErrors) {
+        setErrors(respErrors)
+      } else {
+        toast.show(err.message || "Something went wrong", "error")
+      }
     }
 
     setLoading(false)
@@ -85,31 +100,44 @@ export default function VoucherForm({ params }: { params: Promise<{ id: string }
         <div>
           <label className="block mb-1 font-medium">Voucher Code</label>
           <input
-            className="border px-3 py-2 rounded w-full"
+            className={`border px-3 py-2 rounded w-full ${errors.voucher_code ? 'border-red-500' : ''}`}
             value={form.voucher_code}
             onChange={e => setForm({ ...form, voucher_code: e.target.value })}
           />
+          {errors.voucher_code && (
+            <p className="text-red-500 text-sm mt-1">{errors.voucher_code}</p>
+          )}
         </div>
 
         <div>
           <label className="block mb-1 font-medium">Discount (%)</label>
           <input
             type="number"
-            className="border px-3 py-2 rounded w-full"
+            className={`border px-3 py-2 rounded w-full ${errors.discount_percent ? 'border-red-500' : ''}`}
             value={form.discount_percent}
             onChange={e => setForm({ ...form, discount_percent: Number(e.target.value) })}
           />
+          {errors.discount_percent && (
+            <p className="text-red-500 text-sm mt-1">{errors.discount_percent}</p>
+          )}
         </div>
 
         <div>
           <label className="block mb-1 font-medium">Expiry Date</label>
           <input
             type="date"
-            className="border px-3 py-2 rounded w-full"
+            className={`border px-3 py-2 rounded w-full ${errors.expiry_date ? 'border-red-500' : ''}`}
             value={form.expiry_date}
             onChange={e => setForm({ ...form, expiry_date: e.target.value })}
           />
+          {errors.expiry_date && (
+            <p className="text-red-500 text-sm mt-1">{errors.expiry_date}</p>
+          )}
         </div>
+
+        {errors.general && (
+          <p className="text-red-500 text-sm mt-1">{errors.general}</p>
+        )}
 
         <div className="flex gap-2">
           <button

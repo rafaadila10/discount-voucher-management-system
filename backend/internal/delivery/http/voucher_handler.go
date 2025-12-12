@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 	"voucher-backend/internal/domain"
 
@@ -91,20 +92,31 @@ func (h *VoucherHandler) GetByID(c *gin.Context) {
 
 func (h *VoucherHandler) Store(c *gin.Context) {
 	var in domain.CreateVoucherInput
-
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"errors": map[string]string{
+			"general": err.Error(),
+		}})
 		return
 	}
 
+	fieldErrors := make(map[string]string)
+
+	if in.VoucherCode == "" {
+		fieldErrors["voucher_code"] = "Voucher code is required"
+	}
 	if in.DiscountPercent < 1 || in.DiscountPercent > 100 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "discount must be 1-100"})
-		return
+		fieldErrors["discount_percent"] = "Discount must be 1-100"
+	}
+	if in.ExpiryDate == "" {
+		fieldErrors["expiry_date"] = "Expiry date is required"
+	}
+	parsedDate, err := time.Parse("2006-01-02", in.ExpiryDate)
+	if in.ExpiryDate != "" && err != nil {
+		fieldErrors["expiry_date"] = "Invalid date format"
 	}
 
-	parsedDate, err := time.Parse("2006-01-02", in.ExpiryDate)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid date format"})
+	if len(fieldErrors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": fieldErrors})
 		return
 	}
 
@@ -115,7 +127,12 @@ func (h *VoucherHandler) Store(c *gin.Context) {
 	}
 
 	if err := h.uc.Store(&voucher); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "Duplicate entry") && strings.Contains(err.Error(), "voucher_code") {
+			fieldErrors["voucher_code"] = "Voucher code already exists"
+		} else {
+			fieldErrors["general"] = err.Error()
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"errors": fieldErrors})
 		return
 	}
 
@@ -126,30 +143,46 @@ func (h *VoucherHandler) Update(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		c.JSON(http.StatusBadRequest, gin.H{"errors": map[string]string{
+			"general": "Invalid id",
+		}})
 		return
 	}
 
 	var in domain.UpdateVoucherInput
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"errors": map[string]string{
+			"general": err.Error(),
+		}})
 		return
 	}
 
+	fieldErrors := make(map[string]string)
+
+	if in.VoucherCode == "" {
+		fieldErrors["voucher_code"] = "Voucher code is required"
+	}
 	if in.DiscountPercent < 1 || in.DiscountPercent > 100 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "discount must be 1-100"})
-		return
+		fieldErrors["discount_percent"] = "Discount must be 1-100"
+	}
+	if in.ExpiryDate == "" {
+		fieldErrors["expiry_date"] = "Expiry date is required"
+	}
+	parsedDate, err := time.Parse("2006-01-02", in.ExpiryDate)
+	if in.ExpiryDate != "" && err != nil {
+		fieldErrors["expiry_date"] = "Invalid date format"
 	}
 
-	parsedDate, err := time.Parse("2006-01-02", in.ExpiryDate)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid date format"})
+	if len(fieldErrors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": fieldErrors})
 		return
 	}
 
 	existing, err := h.uc.GetByID(uint(id))
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "voucher not found"})
+		c.JSON(http.StatusNotFound, gin.H{"errors": map[string]string{
+			"general": "Voucher not found",
+		}})
 		return
 	}
 
@@ -159,7 +192,12 @@ func (h *VoucherHandler) Update(c *gin.Context) {
 	existing.UpdatedAt = time.Now()
 
 	if err := h.uc.Update(existing); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "Duplicate entry") && strings.Contains(err.Error(), "voucher_code") {
+			fieldErrors["voucher_code"] = "Voucher code already exists"
+		} else {
+			fieldErrors["general"] = err.Error()
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"errors": fieldErrors})
 		return
 	}
 
