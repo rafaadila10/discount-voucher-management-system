@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { useToast } from '../../../components/Toast'
 
 export default function CreateVoucherPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function CreateVoucherPage() {
   const [discount, setDiscount] = useState("");
   const [expiry, setExpiry] = useState("");
   const [loading, setLoading] = useState(false);
+  const toast = useToast()
 
   const submit = async (e: any) => {
     e.preventDefault();
@@ -23,12 +25,12 @@ export default function CreateVoucherPage() {
         expiry_date: expiry,
       });
 
-      alert("Voucher created!");
+      toast.show("Voucher created!");
       router.push("/vouchers");
 
     } catch (err) {
       console.error(err);
-      alert("Failed to create voucher");
+      toast.show("Failed to create voucher", "error");
     }
 
     setLoading(false);
@@ -73,13 +75,22 @@ export default function CreateVoucherPage() {
           />
         </div>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Create"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Create"}
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/vouchers')}
+            className="px-4 py-2 rounded bg-gray-200"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
